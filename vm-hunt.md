@@ -20,6 +20,10 @@ COMPROMISED SYSTEMS:
 
 AZUKI-SL (IT admin workstation)
 
+DeviceProcessEvents
+| where DeviceName == "azuki-sl"
+| where Timestamp between (datetime(2025-11-19) .. datetime(2025-11-20))
+
 ### High-Level TOR-Related IoC Discovery Plan
 
 - **Check `DeviceFileEvents`** for any `tor(.exe)` or `firefox(.exe)` file events.
@@ -30,28 +34,26 @@ AZUKI-SL (IT admin workstation)
 
 ## Steps Taken
 
-### 1. Searched the `DeviceFileEvents` Table
+### Flag 1. Searched the `DeviceLogonEvents` Table
 
-Searched DeviceFileEvents for any file containing “tor” and discovered the user had downloaded tor installer and deleted the file after use. Text file created on desktop called “TOR SHOP” Events started 2025-09-10T14:16:49.13.
+.
 
 **Query used to locate events:**
 
 ```kql
 
-DeviceFileEvents
-| where FileName startswith "tor"
-| where DeviceName == "win10rc"
-| where InitiatingProcessAccountName == "rcadmin"
-| where Timestamp >= datetime(2025-09-10T14:16:49.1372794Z)
-| order by Timestamp desc
-| project Timestamp, DeviceName, ActionType, FileName, FolderPath, SHA256, Account = InitiatingProcessAccountName
+DeviceLogonEvents
+| where DeviceName == "azuki-sl"
+| where Timestamp between (datetime(2025-11-19) .. datetime(2025-11-20))
+| where ActionType contains "LogonSuccess"
+| project RemoteIP
 
 ```
 <img width="2020" alt="image" src="tor-download2q.png">
 
 ---
 
-### 2. Searched the `DeviceProcessEvents` Table
+### Flag 2. Searched the `DeviceProcessEvents` Table
 
 Searched process events table for any command line containing tor-browser.exe file. File executed on two occasions roughly 10 mins apart…
 
@@ -62,10 +64,11 @@ Searched process events table for any command line containing tor-browser.exe fi
 
 ```kql
 
-DeviceProcessEvents
-| where DeviceName == "win10rc"
-| where ProcessCommandLine contains "tor-browser-windows-x86_64-portable-14.5.6.exe"
-| project Timestamp, DeviceName,AccountName, ActionType, FileName, FolderPath, SHA256, ProcessCommandLine
+DeviceLogonEvents
+| where DeviceName == "azuki-sl"
+| where Timestamp between (datetime(2025-11-19) .. datetime(2025-11-20))
+| where ActionType contains "LogonSuccess"
+| project RemoteIP
 
 ```
 <img width="1212" alt="image" src="tor-install.png">
