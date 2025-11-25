@@ -49,7 +49,7 @@ DeviceLogonEvents
 | project RemoteIP, AccountName
 
 ```
-<img width="2020" alt="image" src="Flag1-2.png">
+<img width="1900" alt="image" src="Flag1-2.png">
 
 ---
 
