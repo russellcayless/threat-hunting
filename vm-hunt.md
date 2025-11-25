@@ -94,7 +94,7 @@ DeviceProcessEvents
 | order by Timestamp asc
 
 ```
-<img width="250" alt="image" src="Flag4.png">
+<img width="500" alt="image" src="Flag4.png">
 
 ---
 
@@ -118,7 +118,7 @@ DeviceRegistryEvents
 
 
 ```
-<img width="250" alt="image" src="Flag5.png">
+<img width="500" alt="image" src="Flag5.png">
 
 ---
 
@@ -143,7 +143,7 @@ DeviceRegistryEvents
 
 
 ```
-<img width="250" alt="image" src="Flag6.png">
+<img width="500" alt="image" src="Flag6.png">
 
 ---
 
@@ -166,7 +166,7 @@ DeviceProcessEvents
 | where FileName contains "certutil.exe"
 
 ```
-<img width="250" alt="image" src="Flag7.png">
+<img width="500" alt="image" src="Flag7.png">
 
 ---
 
@@ -189,7 +189,7 @@ DeviceProcessEvents
 | where FileName contains "schtasks.exe"
 
 ```
-<img width="250" alt="image" src="Flag8+9.png">
+<img width="500" alt="image" src="Flag8+9.png">
 
 ---
 
@@ -214,7 +214,7 @@ DeviceNetworkEvents
 | project RemoteIP
 
 ```
-<img width="250" alt="image" src="Flag10.png">
+<img width="500" alt="image" src="Flag10.png">
 
 ---
 
@@ -238,7 +238,7 @@ DeviceNetworkEvents
 
 
 ```
-<img width="250" alt="image" src="Flag11.png">
+<img width="500" alt="image" src="Flag11.png">
 
 ---
 
@@ -262,7 +262,7 @@ DeviceFileEvents
 | order by Timestamp asc
 
 ```
-<img width="250" alt="image" src="Flag12.png">
+<img width="500" alt="image" src="Flag12.png">
 
 ---
 
@@ -285,7 +285,7 @@ DeviceProcessEvents
 | project Timestamp, DeviceName, FileName, ProcessCommandLine
 
 ```
-<img width="250" alt="image" src="Flag13.png">
+<img width="500" alt="image" src="Flag13.png">
 
 ---
 
@@ -307,7 +307,7 @@ DeviceFileEvents
 | where FileName contains ".zip"
 
 ```
-<img width="250" alt="image" src="Flag14.png">
+<img width="500" alt="image" src="Flag14.png">
 
 ---
 
@@ -328,7 +328,7 @@ DeviceNetworkEvents
 | where RemoteUrl contains "Discord"
 
 ```
-<img width="250" alt="image" src="Flag15.png">
+<img width="500" alt="image" src="Flag15.png">
 
 ---
 
@@ -352,7 +352,7 @@ DeviceProcessEvents
 
 
 ```
-<img width="250" alt="image" src="Flag16.png">
+<img width="500" alt="image" src="Flag16.png">
 
 ---
 
@@ -373,7 +373,7 @@ DeviceProcessEvents
 | where ProcessCommandLine contains "net"
 
 ```
-<img width="250" alt="image" src="Flag17.png">
+<img width="500" alt="image" src="Flag17.png">
 
 ---
 
@@ -397,7 +397,7 @@ DeviceFileEvents
 | order by Timestamp asc
 
 ```
-<img width="250" alt="image" src="Flag18.png">
+<img width="500" alt="image" src="Flag18.png">
 
 ---
 
@@ -427,7 +427,7 @@ DeviceProcessEvents
 
 
 ```
-<img width="250" alt="image" src="Flag19.png">
+<img width="500" alt="image" src="Flag19.png">
 
 ---
 
