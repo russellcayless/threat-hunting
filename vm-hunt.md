@@ -72,7 +72,7 @@ DeviceProcessEvents
 
 
 ```
-<img width="300" alt="image" src="Flag3.png">
+<img width="400" alt="image" src="Flag3.png">
 
 ---
 
