@@ -437,10 +437,10 @@ DeviceProcessEvents
 
 1. External RDP Break‑in
 
-- - Attacker IP: 88.97.178.12
+  - Attacker IP: 88.97.178.12
 
-- - Compromised account: kenji.sato
-- - The attacker successfully logged into the system via RDP using stolen credentials.
+  - Compromised account: kenji.sato
+  - The attacker successfully logged into the system via RDP using stolen credentials.
 
 ### 2. Host Reconnaissance
 
