@@ -214,7 +214,7 @@ DeviceNetworkEvents
 | project RemoteIP
 
 ```
-<img width="500" alt="image" src="Flag10.png">
+<img width="250" alt="image" src="Flag10.png">
 
 ---
 
