@@ -36,7 +36,13 @@ DeviceProcessEvents
 
 ### Flag 1 + 2. Searched the `DeviceLogonEvents` Table
 
-.
+The investigation focuses on identifying how an attacker gained initial access through Remote Desktop Protocol (RDP).
+
+Flag 1 – Source IP:
+By analysing DeviceLogonEvents for remote/interactive logons from external locations during the incident, the suspicious RDP connection is traced back to the IP address 88.97.178.12.
+
+Flag 2 – Compromised Account:
+By correlating the RDP logon event with the timestamp and authentication details, the compromised user account used for initial access is identified as kenji.sato.
 
 **Query used to locate events:**
 
@@ -46,7 +52,7 @@ DeviceLogonEvents
 | where DeviceName == "azuki-sl"
 | where Timestamp between (datetime(2025-11-19) .. datetime(2025-11-20))
 | where ActionType contains "LogonSuccess"
-| project RemoteIP
+| project RemoteIP, AccountName
 
 ```
 <img width="2020" alt="image" src="tor-download2q.png">
@@ -55,7 +61,12 @@ DeviceLogonEvents
 
 ### Flag 3. Searched the `DeviceProcessEvents` Table
 
-Searched device process events for evidence that user opened tor browser. Firefox.exe was opened at 2025-09-10T14:17:49. There were several instances of Firefox being opened and also tor.exe.
+Flag 3 focuses on detecting network reconnaissance activity performed by the attacker after initial access. Attackers often run commands that reveal local network devices and their MAC addresses to plan lateral movement.
+By analysing DeviceProcessEvents for enumeration tools executed after the compromise, the command used for network neighbour discovery is identified as:
+
+"ARP.EXE" -a
+
+This indicates the attacker used the ARP utility to list devices on the local network.
 
 **Query used to locate events:**
 
@@ -73,11 +84,11 @@ DeviceProcessEvents
 
 ### Flag 4. Searched the `DeviceProcessEvents` Table
 
-The user successfully accessed the tor browser initially at this timestamp 2025-09-10T14:28:13.  The file was located in the following path c:\users\rcadmin\desktop\tor browser\browser\torbrowser\tor\tor.exe. The following connection was initially established:
+Flag 4 focuses on identifying the malware staging directory created by the attacker. Threat actors often make hidden directories within system folders to store tools, payloads, and stolen data. By examining events involving directory creation (mkdir/New-Item) followed by attribute changes (attrib), the investigation identifies the attacker’s primary staging location as:
 
-- URI: https://www.tmisbqro5cnedyswxew2jloq.com
-- IP Address: 178.32.139.118
-- Port: 9001
+C:\ProgramData\WindowsCache
+
+This hidden folder served as the central storage location for malware and related artefacts.
 
 **Query used to locate events:**
 
@@ -95,11 +106,13 @@ DeviceProcessEvents
 
 ### Flag 5. Searched the `DeviceRegistryEvents` Table
 
-The user successfully accessed the tor browser initially at this timestamp 2025-09-10T14:28:13.  The file was located in the following path c:\users\rcadmin\desktop\tor browser\browser\torbrowser\tor\tor.exe. The following connection was initially established:
+Flag 5 examines how the attacker attempted to evade detection by modifying Windows Defender settings. Specifically, they added file extension exclusions so Defender would not scan certain types of files, allowing malware and tools to run undetected.
 
-- URI: https://www.tmisbqro5cnedyswxew2jloq.com
-- IP Address: 178.32.139.118
-- Port: 9001
+By reviewing DeviceRegistryEvents for changes to the Windows Defender Exclusions → Extensions registry key and counting the unique file extensions added during the attack, investigators determined that:
+
+3 file extensions were excluded from Windows Defender scanning.
+
+This highlights the attacker’s deliberate effort to weaken security controls.
 
 **Query used to locate events:**
 
@@ -118,11 +131,13 @@ DeviceRegistryEvents
 
 ### Flag 6. Searched the `DeviceRegistryEvents` Table
 
-The user successfully accessed the tor browser initially at this timestamp 2025-09-10T14:28:13.  The file was located in the following path c:\users\rcadmin\desktop\tor browser\browser\torbrowser\tor\tor.exe. The following connection was initially established:
+Flag 6 identifies how the attacker further evaded detection by excluding an entire temporary folder path from Windows Defender scanning. By analysing DeviceRegistryEvents for modifications to the Windows Defender → Exclusions → Paths registry key, investigators found a temp directory added to the exclusion list. This allowed any malicious files placed there to run without being scanned.
 
-- URI: https://www.tmisbqro5cnedyswxew2jloq.com
-- IP Address: 178.32.139.118
-- Port: 9001
+The excluded folder path was:
+
+C:\Users\KENJI~1.SAT\AppData\Local\Temp
+
+This exclusion provided the attacker with a safe location to execute and store malicious tools.
 
 **Query used to locate events:**
 
@@ -141,11 +156,12 @@ DeviceRegistryEvents
 
 ### Flag 7. Searched the `DeviceProcessEvents` Table
 
-The user successfully accessed the tor browser initially at this timestamp 2025-09-10T14:28:13.  The file was located in the following path c:\users\rcadmin\desktop\tor browser\browser\torbrowser\tor\tor.exe. The following connection was initially established:
+Flag 7 focuses on identifying a Windows-native utility that the attacker abused to download malicious files — a common “Living Off the Land” technique that avoids detection by using trusted system tools.
+By reviewing DeviceProcessEvents for command lines showing downloads from URLs, investigators determined that the attacker used:
 
-- URI: https://www.tmisbqro5cnedyswxew2jloq.com
-- IP Address: 178.32.139.118
-- Port: 9001
+certutil.exe
+
+This built-in certificate management tool can fetch files over the network, making it a popular choice for stealthy malware delivery.
 
 **Query used to locate events:**
 
@@ -162,11 +178,13 @@ DeviceProcessEvents
 
 ### Flag 8 + 9. Searched the `DeviceProcessEvents` Table
 
-The user successfully accessed the tor browser initially at this timestamp 2025-09-10T14:28:13.  The file was located in the following path c:\users\rcadmin\desktop\tor browser\browser\torbrowser\tor\tor.exe. The following connection was initially established:
+Flag 8 investigates persistence created by the attacker using a scheduled task. By analysing DeviceProcessEvents for schtasks.exe /create commands during the compromise, investigators identified that the attacker created a scheduled task named:
 
-- URI: https://www.tmisbqro5cnedyswxew2jloq.com
-- IP Address: 178.32.139.118
-- Port: 9001
+Windows Update Check
+
+This name mimics legitimate Windows maintenance tasks to avoid suspicion.
+
+Flag 9 focuses on the task’s target action, which reveals the exact malware or script executed for persistence. It can be found in the /tr parameter of the schtasks.exe command.
 
 **Query used to locate events:**
 
@@ -183,11 +201,13 @@ DeviceProcessEvents
 
 ### Flag 10. Searched the `DeviceNetworkEvents` Table
 
-The user successfully accessed the tor browser initially at this timestamp 2025-09-10T14:28:13.  The file was located in the following path c:\users\rcadmin\desktop\tor browser\browser\torbrowser\tor\tor.exe. The following connection was initially established:
+Flag 10 focuses on identifying the Command and Control (C2) server that the attacker’s malware connected to after execution. By examining DeviceNetworkEvents for outbound connections made by the malicious process, investigators identified a suspicious external IP address acting as the remote control point.
 
-- URI: https://www.tmisbqro5cnedyswxew2jloq.com
-- IP Address: 178.32.139.118
-- Port: 9001
+The C2 server IP was:
+
+78.141.196.6
+
+This IP represents the attacker’s command-and-control infrastructure used to manage the compromised system.
 
 **Query used to locate events:**
 
@@ -197,7 +217,7 @@ DeviceNetworkEvents
 | where DeviceName == "azuki-sl"
 | where ActionType contains "ConnectionSuccess"
 | where RemotePort !in (80, 443)
-
+| project RemoteIP
 
 ```
 <img width="1212" alt="image" src="tor-usage.png">
@@ -206,11 +226,11 @@ DeviceNetworkEvents
 
 ### Flag 11. Searched the `DeviceNetworkEvents` Table
 
-The user successfully accessed the tor browser initially at this timestamp 2025-09-10T14:28:13.  The file was located in the following path c:\users\rcadmin\desktop\tor browser\browser\torbrowser\tor\tor.exe. The following connection was initially established:
+Flag 11 identifies the destination port used by the attacker’s malware to communicate with the Command and Control (C2) server. By analysing DeviceNetworkEvents for outbound connections from the malicious process and checking the RemotePort field, investigators determined the port used for C2 communications:
 
-- URI: https://www.tmisbqro5cnedyswxew2jloq.com
-- IP Address: 178.32.139.118
-- Port: 9001
+443
+
+This port, typically used for HTTPS, allows attackers to blend malicious traffic with normal encrypted web traffic, helping evade detection.
 
 **Query used to locate events:**
 
@@ -230,11 +250,11 @@ DeviceNetworkEvents
 
 ### Flag 12. Searched the `DeviceFileEvents` Table
 
-The user successfully accessed the tor browser initially at this timestamp 2025-09-10T14:28:13.  The file was located in the following path c:\users\rcadmin\desktop\tor browser\browser\torbrowser\tor\tor.exe. The following connection was initially established:
+Flag 12 focuses on identifying the credential theft tool used by the attacker. These tools are often renamed to short, inconspicuous filenames to evade detection. By reviewing files downloaded into the malware staging directory and correlating them with events involving access to LSASS memory, investigators determined that the attacker used a credential dumping tool named:
 
-- URI: https://www.tmisbqro5cnedyswxew2jloq.com
-- IP Address: 178.32.139.118
-- Port: 9001
+mm.exe
+
+This shortened filename helped the attacker conceal the true nature of the tool while extracting credentials from the system.
 
 **Query used to locate events:**
 
@@ -255,11 +275,11 @@ DeviceFileEvents
 
 ### Flag 13. Searched the `DeviceProcessEvents` Table
 
-The user successfully accessed the tor browser initially at this timestamp 2025-09-10T14:28:13.  The file was located in the following path c:\users\rcadmin\desktop\tor browser\browser\torbrowser\tor\tor.exe. The following connection was initially established:
+Flag 13 determines which Mimikatz module the attacker used to extract credentials from system memory. By analysing the command-line arguments passed to the credential dumping tool and looking for the typical module::command syntax, investigators identified that the attacker executed:
 
-- URI: https://www.tmisbqro5cnedyswxew2jloq.com
-- IP Address: 178.32.139.118
-- Port: 9001
+sekurlsa::logonpasswords
+
+This module is specifically designed to pull logon passwords and authentication data directly from the LSASS process, confirming that the attacker used advanced credential theft techniques.
 
 **Query used to locate events:**
 
@@ -278,11 +298,11 @@ DeviceProcessEvents
 
 ### Flag 14. Searched the `DeviceFileEvents` Table
 
-The user successfully accessed the tor browser initially at this timestamp 2025-09-10T14:28:13.  The file was located in the following path c:\users\rcadmin\desktop\tor browser\browser\torbrowser\tor\tor.exe. The following connection was initially established:
+Flag 14 identifies the archive file created by the attacker to package stolen data before exfiltration. By analysing activity in the staging directory—such as file creation events or the use of Compress-Archive—investigators determined that the attacker generated a ZIP file for data collection:
 
-- URI: https://www.tmisbqro5cnedyswxew2jloq.com
-- IP Address: 178.32.139.118
-- Port: 9001
+export-data.zip
+
+This archive contains the gathered data that was later exfiltrated from the system.
 
 **Query used to locate events:**
 
@@ -299,11 +319,11 @@ DeviceFileEvents
 
 ### Flag 15. Searched the `DeviceNetworkEvents` Table
 
-The user successfully accessed the tor browser initially at this timestamp 2025-09-10T14:28:13.  The file was located in the following path c:\users\rcadmin\desktop\tor browser\browser\torbrowser\tor\tor.exe. The following connection was initially established:
+Flag 15 identifies the cloud service the attacker used to exfiltrate stolen data. By reviewing DeviceNetworkEvents for outbound HTTPS traffic to common file‑sharing or communication platforms during the exfiltration phase, investigators determined that the attacker uploaded the archived data to:
 
-- URI: https://www.tmisbqro5cnedyswxew2jloq.com
-- IP Address: 178.32.139.118
-- Port: 9001
+Discord
+
+This indicates the attacker leveraged Discord’s file upload capabilities as their exfiltration channel.
 
 **Query used to locate events:**
 
@@ -320,19 +340,21 @@ DeviceNetworkEvents
 
 ### Flag 16. Searched the `DeviceProcessEvents` Table
 
-The user successfully accessed the tor browser initially at this timestamp 2025-09-10T14:28:13.  The file was located in the following path c:\users\rcadmin\desktop\tor browser\browser\torbrowser\tor\tor.exe. The following connection was initially established:
+Flag 16 focuses on identifying which Windows event log the attacker cleared first as part of their anti‑forensics activity. By analysing process events late in the attack timeline—specifically executions of wevtutil.exe used to clear logs—investigators determined that the attacker initially targeted the:
 
-- URI: https://www.tmisbqro5cnedyswxew2jloq.com
-- IP Address: 178.32.139.118
-- Port: 9001
+Security log
+
+Clearing the Security log first suggests the attacker intended to erase authentication and access traces before removing other evidence.
 
 **Query used to locate events:**
 
 ```kql
 
 DeviceProcessEvents
-| where DeviceName == "azuki-sl"
-| where FileName contains "wevtutil.exe"
+| where FileName =~ "wevtutil.exe"
+| where ProcessCommandLine has "cl" or ProcessCommandLine has "clear-log"
+| project Timestamp, DeviceName, FileName, ProcessCommandLine
+| order by Timestamp asc
 
 
 ```
@@ -342,11 +364,11 @@ DeviceProcessEvents
 
 ### Flag 17. Searched the `DeviceProcessEvents` Table
 
-The user successfully accessed the tor browser initially at this timestamp 2025-09-10T14:28:13.  The file was located in the following path c:\users\rcadmin\desktop\tor browser\browser\torbrowser\tor\tor.exe. The following connection was initially established:
+Flag 17 identifies the backdoor user account the attacker created to maintain long‑term access after the main intrusion. By analysing account creation commands executed during the impact phase—specifically those using /add and adding the new user to the Administrators group—investigators determined that the attacker created a hidden persistence account with the username:
 
-- URI: https://www.tmisbqro5cnedyswxew2jloq.com
-- IP Address: 178.32.139.118
-- Port: 9001
+support
+
+This account would allow the attacker to regain access even after other remediation steps.
 
 **Query used to locate events:**
 
@@ -363,11 +385,11 @@ DeviceProcessEvents
 
 ### Flag 18. Searched the `DeviceFileEvents` Table
 
-The user successfully accessed the tor browser initially at this timestamp 2025-09-10T14:28:13.  The file was located in the following path c:\users\rcadmin\desktop\tor browser\browser\torbrowser\tor\tor.exe. The following connection was initially established:
+Flag 18 identifies the malicious PowerShell script used by the attacker to automate parts of the intrusion. By analysing DeviceFileEvents for script files created in temporary directories early in the attack—especially PowerShell scripts downloaded from external sources—investigators determined that the attacker used:
 
-- URI: https://www.tmisbqro5cnedyswxew2jloq.com
-- IP Address: 178.32.139.118
-- Port: 9001
+wupdate.ps1
+
+This script served as the automation entry point for executing subsequent stages of the attack chain.
 
 **Query used to locate events:**
 
@@ -385,36 +407,19 @@ DeviceFileEvents
 
 ---
 
-### Flag 19. Searched the `DeviceProcessEvents` Table
+### Flag 19 + 20. Searched the `DeviceProcessEvents` Table
 
-The user successfully accessed the tor browser initially at this timestamp 2025-09-10T14:28:13.  The file was located in the following path c:\users\rcadmin\desktop\tor browser\browser\torbrowser\tor\tor.exe. The following connection was initially established:
+Flag 19 identifies the secondary system the attacker attempted to access during lateral movement. By analysing remote access commands—such as cmdkey or mstsc—executed late in the attack timeline, investigators determined the internal IP address the attacker targeted:
 
-- URI: https://www.tmisbqro5cnedyswxew2jloq.com
-- IP Address: 178.32.139.118
-- Port: 9001
+10.1.0.188
 
-**Query used to locate events:**
+This reveals the attacker’s next intended pivot point within the network.
 
-```kql
+Flag 20 identifies the remote access tool the attacker used to move laterally within the network. By analysing process events near the end of the attack timeline—specifically those involving remote system names or IP addresses—investigators confirmed that the attacker used the built‑in Windows Remote Desktop client:
 
-DeviceProcessEvents
-| where DeviceName == "azuki-sl"
-| where FileName =~ "mstsc.exe"
-| project Timestamp, FileName, ProcessCommandLine
-| order by Timestamp asc
+mstsc.exe
 
-
-```
-<img width="1212" alt="image" src="tor-usage.png">
-
----
-### Flag 20. Searched the `DeviceProcessEvents` Table
-
-The user successfully accessed the tor browser initially at this timestamp 2025-09-10T14:28:13.  The file was located in the following path c:\users\rcadmin\desktop\tor browser\browser\torbrowser\tor\tor.exe. The following connection was initially established:
-
-- URI: https://www.tmisbqro5cnedyswxew2jloq.com
-- IP Address: 178.32.139.118
-- Port: 9001
+This legitimate tool helps attackers blend their activity with normal administrative behaviour, making detection more difficult.
 
 **Query used to locate events:**
 
@@ -425,6 +430,7 @@ DeviceProcessEvents
 | where FileName =~ "mstsc.exe"
 | project Timestamp, FileName, ProcessCommandLine
 | order by Timestamp asc
+
 
 ```
 <img width="1212" alt="image" src="tor-usage.png">
