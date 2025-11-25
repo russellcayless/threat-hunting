@@ -446,90 +446,90 @@ DeviceProcessEvents
 
 2. Network Device Discovery
 
-Executed: arp -a
-Used to enumerate devices on the local network for potential lateral movement.
+  - Executed: arp -a
+  - Used to enumerate devices on the local network for potential lateral movement.
 
 ### 3. Establishing Foothold & Staging
 
 3. Created Hidden Malware Staging Folder
 
-Folder: C:\ProgramData\WindowsCache
-Used to store malware, tools, and collected data.
+  - Folder: C:\ProgramData\WindowsCache
+  - Used to store malware, tools, and collected data.
 
 ### 4. Defense Evasion
 
 4. Manipulated Windows Defender
 
-Added 3 file extensions to Defender exclusions.
+  - Added 3 file extensions to Defender exclusions.
 
-Excluded path: C:\Users\KENJI~1.SAT\AppData\Local\Temp
-This allowed attacker tools to run undetected.
+  - Excluded path: C:\Users\KENJI~1.SAT\AppData\Local\Temp
+  - This allowed attacker tools to run undetected.
 
 5. Used Living‑off‑the‑Land Binary for Downloading
 
-Tool abused: certutil.exe
-Used to download malicious payloads.
+  - Tool abused: certutil.exe
+  - Used to download malicious payloads.
 
 ### 5. Persistence
 
 6. Created a Fake Windows Update Scheduled Task
 
-Task name: Windows Update Check
+  - Task name: Windows Update Check
 
-Persistence mechanism executed via schtasks.
+  - Persistence mechanism executed via schtasks.
 
 7. Created a Backdoor Administrator Account
 
-Username: support
-Ensured long‑term access even after cleanup.
+  - Username: support
+  - Ensured long‑term access even after cleanup.
 
 ### 6. Command & Control
 
 8. Malware Beaconed Out to C2 Server
 
-C2 IP: 78.141.196.6
+  - C2 IP: 78.141.196.6
 
-Port used: 443 (blends into normal HTTPS traffic)
+  - Port used: 443 (blends into normal HTTPS traffic)
 
 ### 7. Credential Theft
 
 9. Credential Dumper Identified
 
-File: mm.exe
-Likely renamed Mimikatz.
+  - File: mm.exe
+  - Likely renamed Mimikatz.
 
 10. Mimikatz Module Used
 
-sekurlsa::logonpasswords
-Extracted passwords and authentication tokens from LSASS.
+  - sekurlsa::logonpasswords
+  - Extracted passwords and authentication tokens from LSASS.
 
 ### 8. Collection & Exfiltration
 
 11. Archive Created for Stolen Data
 
-File: export-data.zip
+  - File: export-data.zip
 
 12. Exfiltration Channel Used
 
-Discord
-Data was uploaded to the Discord CDN.
+  - Discord
+  - Data was uploaded to the Discord CDN.
 
 ### 9. Anti‑Forensics
 
 13. Logs Cleared
 
-First log cleared: Security Log
-Indicates attacker priority to hide authentication evidence.
+  - First log cleared: Security Log
+  - Indicates attacker priority to hide authentication evidence.
 
 ### 10. Lateral Movement Attempt
 
 14. Targeted Internal System
 
-IP: 10.1.0.188
+  - IP: 10.1.0.188
 
 15. Tool Used for Lateral Movement
 
-mstsc.exe (Windows RDP client)
+  - mstsc.exe (Windows RDP client)
 
 ---
 
