@@ -437,53 +437,111 @@ DeviceProcessEvents
 
 ---
 
-## Chronological Event Timeline 
+##  Event Timeline 
 
-### 1. 2025-09-10T14:16:49
+### 1. Initial Access
 
-- tor installer downloaded by rcadmin.
-- Evidence of file creation (TOR SHOP.txt) on the desktop.
+1. External RDP Break‑in
 
-### 2. 2025-09-10T14:17:07
+Attacker IP: 88.97.178.12
 
-- Execution of tor-browser-windows-x86_64-portable-14.5.6.exe.
+Compromised account: kenji.sato
+The attacker successfully logged into the system via RDP using stolen credentials.
 
-### 3. 2025-09-10T14:17:49
+### 2. Host Reconnaissance
 
-- firefox.exe launched (within Tor Browser bundle).
+2. Network Device Discovery
 
-### 4. 2025-09-10T14:26:20
+Executed: arp -a
+Used to enumerate devices on the local network for potential lateral movement.
 
-- Tor browser installer executed again.
+### 3. Establishing Foothold & Staging
 
-### 5. 2025-09-10T14:28:13
+3. Created Hidden Malware Staging Folder
 
-- Successful launch of Tor browser (tor.exe) from:
-  - c:\users\rcadmin\desktop\tor browser\browser\torbrowser\tor\tor.exe
-- Outbound connection established:
-  - IP: 178.32.139.118
-  - Port: 9001 (Tor entry node)
-  - URL: https://www.tmisbqro5cnedyswxew2jloq.com
+Folder: C:\ProgramData\WindowsCache
+Used to store malware, tools, and collected data.
 
-### 6. Post-Connection
+### 4. Defense Evasion
 
-- Evidence of repeated launches of firefox.exe and tor.exe.
+4. Manipulated Windows Defender
+
+Added 3 file extensions to Defender exclusions.
+
+Excluded path: C:\Users\KENJI~1.SAT\AppData\Local\Temp
+This allowed attacker tools to run undetected.
+
+5. Used Living‑off‑the‑Land Binary for Downloading
+
+Tool abused: certutil.exe
+Used to download malicious payloads.
+
+### 5. Persistence
+
+6. Created a Fake Windows Update Scheduled Task
+
+Task name: Windows Update Check
+
+Persistence mechanism executed via schtasks.
+
+7. Created a Backdoor Administrator Account
+
+Username: support
+Ensured long‑term access even after cleanup.
+
+### 6. Command & Control
+
+8. Malware Beaconed Out to C2 Server
+
+C2 IP: 78.141.196.6
+
+Port used: 443 (blends into normal HTTPS traffic)
+
+### 7. Credential Theft
+
+9. Credential Dumper Identified
+
+File: mm.exe
+Likely renamed Mimikatz.
+
+10. Mimikatz Module Used
+
+sekurlsa::logonpasswords
+Extracted passwords and authentication tokens from LSASS.
+
+### 8. Collection & Exfiltration
+
+11. Archive Created for Stolen Data
+
+File: export-data.zip
+
+12. Exfiltration Channel Used
+
+Discord
+Data was uploaded to the Discord CDN.
+
+### 9. Anti‑Forensics
+
+13. Logs Cleared
+
+First log cleared: Security Log
+Indicates attacker priority to hide authentication evidence.
+
+### 10. Lateral Movement Attempt
+
+14. Targeted Internal System
+
+IP: 10.1.0.188
+
+15. Tool Used for Lateral Movement
+
+mstsc.exe (Windows RDP client)
 
 ---
 
 ## Summary
 
-- User intentionally downloaded and executed Tor browser.
-- Deleted installer after use (suggests awareness/attempt at covering tracks).
-- Created "TOR SHOP" text file on desktop — could indicate intent to access dark web marketplaces.
-- Successful Tor connection confirmed at 14:28:13 via known Tor ports and IP.
-
-This is confirmed policy violation (if Tor use is not authorized) and potential security incident if the user intended to access illicit services.
+The attacker entered the system via RDP using stolen credentials, performed reconnaissance, established persistence, downloaded malware using certutil, communicated with a C2 server over port 443, dumped credentials with Mimikatz, staged and exfiltrated data to Discord, cleared logs to hide their tracks, created a backdoor user account, and then attempted lateral movement to another host.
 
 ---
 
-## Response Taken
-
-TOR usage was confirmed on endpoint win10rc. The device was isolated and the user's direct manager was notified. Ports 9001, 9030, 9050–9051, 9150 blocked on firewall.
-
----
